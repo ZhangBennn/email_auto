@@ -1,18 +1,26 @@
 import gradio as gr
 import requests
 from zhipuai import ZhipuAI
+
 # 假设这是你的GLM API的URL
 GLM_API_URL = "http://your-glm-api-endpoint/generate"
 API_KEY = "xxx"  # 如果有的话
+email_template_path = "./templates/email_template_glm.html"
 
+with open(email_template_path, 'r', encoding='utf-8') as file:
+    email_template_html_content = file.read()
 
-EMAIL_PROMP = """
-你是一名优秀的保险推销员，你需要撰写一封推销邮件，需要生成主题和正文，正文要求如下:
-要求:
+EMAIL_PROMP = f"""
+你是一名优秀的保险推销员，你需要撰写一封推销邮件，需要按要求生成邮件正文，正文要求如下:
+正文要求:
 1. 结合用户画像，生成定制化的保险介绍邮件。注意除了邮件内容本身外不要有任何其他句子。
 2. 邮件内容可包含动态生成的保险亮点总结、优惠信息、客户案例分享等，以提高打开率和转化率。
 3. 同时注意生成内容应该符合邮件格式。
 4. 为了美观，格式需要是HTML格式，除了HTML邮件内容本身，不要出现其他字符。
+5. 邮件正文内容应当尽量避免提及隐私信息，如收入。
+
+输出格式模版如下：
+'```html{email_template_html_content}\n```'
 """
 
 def generate_email(API_KEY, sender_info, customer_info, product_info):
