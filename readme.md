@@ -1,7 +1,7 @@
 # 开发说明
 主分支为main，个人请创建自己的分支，不要直接在主分支上修改，验证无误后由管理员合并到主分支
 
-![alt text](Snipast_main.png)
+![alt text](./img/Snipast_main.png)
 
 # 账号准备
 1. QQ邮箱账号
