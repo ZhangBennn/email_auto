@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QFormLayout, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QPushButton, QSizePolicy, QStatusBar, QTextEdit,
     QVBoxLayout, QWidget)
-import resource_rc
+import ui.resource_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
