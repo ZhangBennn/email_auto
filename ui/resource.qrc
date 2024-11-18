@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="left">
+    <file>img/logo.png</file>
+    <file>img/logo_init.png</file>
+  </qresource>
+</RCC>

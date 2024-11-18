@@ -18,6 +18,7 @@ EMAIL_PROMP = f"""
 3. 同时注意生成内容应该符合邮件格式。
 4. 为了美观，格式需要是HTML格式，除了HTML邮件内容本身，不要出现其他字符。
 5. 邮件正文内容应当尽量避免提及隐私信息，如收入。
+6. 附加信息很重要
 
 输出格式模版如下：
 '```html{email_template_html_content}\n```'
@@ -31,7 +32,10 @@ def generate_email(API_KEY, sender_info, customer_info, product_info):
     :return: 生成的邮件内容
     """
 
-    prompt = f"发件人信息为{str(sender_info)} 请为以下客户 {customer_info} 推销保险产品 {product_info} 生成一封推销邮件。"
+    if product_info is not None:
+        prompt = f"发件人信息为{str(sender_info)} 请为以下客户 {customer_info} 推销保险产品, 生成一封推销邮件。 附加信息为{str(product_info)}"
+    else:
+        prompt = f"发件人信息为{str(sender_info)} 请为以下客户 {customer_info} 推销保险产品, 生成一封推销邮件。"
     
     # response = requests.post(
     #     GLM_API_URL,
