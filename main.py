@@ -1,66 +1,133 @@
-import gradio as gr
+# 导入sys
+import sys
+
+# 任何一个PySide界面程序都需要使用QApplication
+# 我们要展示一个普通的窗口，所以需要导入QWidget，用来让我们自己的类继承
+from PySide6.QtWidgets import QApplication, QMainWindow, QInputDialog, QMessageBox, QVBoxLayout, QPushButton, QDialog, QTextEdit
+from PySide6.QtWidgets import QLabel, QLineEdit, QGridLayout, QHBoxLayout, QWidget, QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import QSize, QThreadPool, Signal, QThread
+from PySide6.QtWebEngineWidgets import QWebEngineView
+# 导入我们生成的界面
+from ui.main_ui import Ui_MainWindow
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from EmailAI import generate_email
 import pandas as pd
 import re
+import csv
 
-# 定义全局变量来存储邮箱账号和密码
-global_sender_email = None
-global_sender_password = None
-global_sender_zhipuapikey = None
-global_sender_name = None
-global_sender_phone = None
-global_sender_company = None
+# 定义全局变量来存储信息
+global_addInfo = None
+
 
 # 状态变量，用于控制显示哪个界面
 show_credentials_page = True
 global_customer_data_path = "./customer_data/customer_details_excel.csv"
-# 自定义 CSS
-custom_css = """
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
 
-.gradio-container {
-    max-width: 600px;
-    margin: 50px auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-}
 
-.gradio-container h1 {
-    text-align: center;
-    color: #333;
-}
+class LoginDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("用户登录")
+        self.setFixedSize(300, 200)
 
-.gradio-container .gr-input, .gradio-container .gr-button {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+        # 创建控件
+        self.label_username = QLabel("用户名:")
+        self.label_account = QLabel("邮箱账号:")
+        self.label_password = QLabel("邮箱密码:")
+        self.label_apikey = QLabel("API Key:")
 
-.gradio-container .gr-button {
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        self.input_username = QLineEdit()
+        self.input_account = QLineEdit()
+        self.input_password = QLineEdit()
+        self.input_password.setEchoMode(QLineEdit.Password)  # 密码模式
+        self.input_apikey = QLineEdit()
+        self.input_apikey.setEchoMode(QLineEdit.Password)  # 密码模式
 
-.gradio-container .gr-button:hover {
-    background-color: #0056b3;
-}
-</style>
-"""
+        self.button_ok = QPushButton("确定")
+        self.button_ok.setEnabled(False)
+
+        self.button_cancel = QPushButton("取消")
+
+        # 布局设置
+        layout = QGridLayout()
+        layout.addWidget(self.label_username, 0, 0)
+        layout.addWidget(self.input_username, 0, 1)
+        layout.addWidget(self.label_account, 1, 0)
+        layout.addWidget(self.input_account, 1, 1)
+        layout.addWidget(self.label_password, 2, 0)
+        layout.addWidget(self.input_password, 2, 1)
+        layout.addWidget(self.label_apikey, 3, 0)
+        layout.addWidget(self.input_apikey, 3, 1)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.button_ok)
+        button_layout.addWidget(self.button_cancel)
+
+        layout.addLayout(button_layout, 4, 0, 1, 2)
+        self.setLayout(layout)
+        
+        # 信号与槽
+        self.input_username.textChanged.connect(self.check_inputs)
+        self.input_account.textChanged.connect(self.check_inputs)
+        self.input_password.textChanged.connect(self.check_inputs)
+        self.input_apikey.textChanged.connect(self.check_inputs)
+
+        # 信号与槽
+        self.button_ok.clicked.connect(self.accept)  # 点击确定关闭窗口
+        self.button_cancel.clicked.connect(self.reject)  # 点击取消关闭窗口
+    
+    def check_inputs(self):
+        """检查所有输入框是否填写内容"""
+        if (
+            self.input_username.text().strip()
+            and self.input_account.text().strip()
+            and self.input_password.text().strip()
+            and self.input_apikey.text().strip()
+        ):
+            self.button_ok.setEnabled(True)
+        else:
+            self.button_ok.setEnabled(False)
+
+class CustomerDetailsDialog(QDialog):
+    def __init__(self, customer):
+        super().__init__()
+        self.setWindowTitle("客户详细信息")
+        self.setGeometry(100, 100, 400, 300)
+
+        # 客户详细信息
+        details = "\n".join(f"{key}: {value}" for key, value in customer.items())
+        label = QLabel(details)
+        label.setWordWrap(True)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        self.setLayout(layout)
+
+class LargeTextDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("输入prompt")
+        self.setGeometry(100, 100, 600, 400)
+
+        # 布局与控件
+        layout = QVBoxLayout()
+        self.textEdit = QTextEdit(self)
+        self.confirmButton = QPushButton("确定", self)
+        self.confirmButton.clicked.connect(self.confirm_text)
+
+        # 布局添加
+        layout.addWidget(self.textEdit)
+        layout.addWidget(self.confirmButton)
+        self.setLayout(layout)
+
+    def confirm_text(self):
+        text = self.textEdit.toPlainText()
+        global global_addInfo
+        global_addInfo = text
+        self.accept()  # 关闭对话框
 
 def send_email(sender_email, sender_password, recipient, subject, body):
     # 创建消息对象
@@ -88,123 +155,251 @@ def send_email(sender_email, sender_password, recipient, subject, body):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def set_credentials(email_input, password_input, apikey_input, name_input, phone_input, company_input):
-    global global_sender_email, global_sender_password, global_sender_zhipuapikey, show_credentials_page
-    global global_sender_name, global_sender_phone, global_sender_company
-    global_sender_email = email_input
-    global_sender_password = password_input
-    global_sender_zhipuapikey = apikey_input
-    global_sender_name = name_input
-    global_sender_phone = phone_input
-    global_sender_company = company_input
+class EmailThread(QThread):
+    # 定义一个信号，用于发送生成的邮件内容和主题
+    email_generated = Signal(str, str)
 
-    show_credentials_page = False
-    return "Credentials set. You can now send an email."
+    def __init__(self, apikey, sender_info, customer_data_str, addtion_info):
+        super().__init__()
+        self.apikey = apikey
+        self.sender_info = sender_info
+        self.customer_data_str = customer_data_str
+        self.addtion_info = addtion_info
 
-def send_email_interface(product_input):
-    if global_sender_email and global_sender_password and global_sender_zhipuapikey:        
-        sender_info = {
-            "name": global_sender_name,
-            "phone": global_sender_phone,
-            "company": global_sender_company,
-        }
-        # 读取 Excel 文件
-        customer_data_df = pd.read_csv(global_customer_data_path,encoding='gbk')
-        for row in customer_data_df.itertuples(index=True, name='Pandas'):
-            # 在这里对每一行进行处理
-            # 创建一个字符串，包含所有列的信息
-            customer_data_str = (
-                f"姓名: {row.姓名}, "
-                f"性别: {row.性别}, "
-                f"年龄: {row.年龄}, "
-                f"职业: {row.职业}, "
-                f"婚姻状况: {row.婚姻状况}, "
-                f"子女情况: {row.子女情况}, "
-                f"保险需求: {row.保险需求}, "
-                f"经济状况: {row.经济状况}, "
-                f"兴趣爱好: {row.兴趣爱好}, "
-                f"其他备注: {row.其他备注}")
+    def run(self):
+        # 执行耗时的操作
+        body = generate_email(self.apikey, self.sender_info, self.customer_data_str, self.addtion_info)[8:-3]
+        subject = re.search(r'<title>(.*?)</title>', body, re.IGNORECASE | re.DOTALL).group(1)
+        # 发送信号，包含邮件内容和主题
+        self.email_generated.emit(body, subject)
 
-            recipient = row.邮箱
+# 继承QWidget类，以获取其属性和方法
+class MyWidget(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.default_csv_path = "./customer_data/customer_details_excel.csv"
+        # 设置界面为我们生成的界面
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.login_ok = False
+        self.file_ok = True
+        self.customer_ok = False
+        self.email_thread = None
 
-            body = generate_email(global_sender_zhipuapikey, sender_info, customer_data_str, product_input)[8:-3]
-            subject = re.search(r'<title>(.*?)</title>', body, re.IGNORECASE | re.DOTALL).group(1)
-            result = send_email(global_sender_email, global_sender_password, recipient, subject, body)
-        return result
-    else:
-        return "Please set your credentials first."
+        # self.web_view = QWebEngineView(self.ui)
+        
+        #login
+        self.ui.loginButton.clicked.connect(self.show_login_dialog)
+        # 左侧客户列表
+        self.details_button = self.ui.costumerButton
+        self.details_button.clicked.connect(self.show_details_dialog)
+        self.details_button.setEnabled(False)
 
-def update_interface():
-    return [
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=show_credentials_page),
-        gr.update(visible=not show_credentials_page),
-        gr.update(visible=not show_credentials_page),
-        gr.update(visible=not show_credentials_page)
-    ]
+        self.customer_list = self.ui.listWidget
+        self.customer_list.itemClicked.connect(self.select_customer)
+        self.load_customer_file()
 
-# 创建 Gradio Blocks
-with gr.Blocks(css=custom_css) as demo:
-    with gr.Row():
-        email_input = gr.Textbox(lines=1, placeholder="Sender Email", label="Sender Email", visible=True)
-        password_input = gr.Textbox(lines=1, placeholder="Sender Password", label="Sender Password", type="password", visible=True)
-        apikey_input = gr.Textbox(lines=1, placeholder="Sender ApiKey", label="Sender ApiKey", type="password", visible=True)
-        name_input = gr.Textbox(lines=1, placeholder="Sender Name", label="Sender Name", value="李华", visible=True)
-        phone_input = gr.Textbox(lines=1, placeholder="Sender Phone", label="Sender Phone", value="12345678923", visible=True)
-        company_input = gr.Textbox(lines=1, placeholder="Sender Company", label="Sender Company", value="中国平平安", visible=True)
-    set_credentials_button = gr.Button("Set Credentials", visible=True)
-    set_credentials_output = gr.Textbox(label="Result", visible=True)
+        #读取文件
+        self.ui.fileButton.clicked.connect(self.read_file_dialog)
+        # 绑定按钮点击事件
+        self.ui.sideButton.clicked.connect(self.show_large_text_dialog)
 
-    product_input = gr.Textbox(label="Please Enter Product Information", visible=False)
-    output_text = gr.HTML(label="Send Email", visible=False)
+        self.ui.generateButton.clicked.connect(self.generate_email)
+        self.ui.generateButton.setEnabled(False)
+
+        self.ui.sendButton.clicked.connect(self.send_email)
+        self.ui.sendButton.setEnabled(False)
+
+        self.ui.body_textEdit.textChanged.connect(self.check_emailBody)
     
-    send_email_button = gr.Button("Send Email", visible=False)
-    send_email_output = gr.Textbox(label="Result", visible=False)
+    def check_emailBody(self):
+        """检查所有输入框是否填写内容"""
+        if (
+            self.ui.body_textEdit.toHtml().strip()
+            and self.login_ok 
+            and self.file_ok
+        ):
+            # self.body = self.ui.body_textEdit.toHtml()
+            # self.web_view.setHtml(self.body)
+            self.ui.sendButton.setEnabled(True)
+        else:
+            self.ui.sendButton.setEnabled(False)
 
-    set_credentials_button.click(
-        fn=set_credentials,
-        inputs=[email_input, password_input, apikey_input, name_input, phone_input, company_input],
-        outputs=set_credentials_output
-    ).then(
-        fn=update_interface,
-        outputs=[
-            email_input, password_input, apikey_input, name_input, phone_input, company_input, set_credentials_button, set_credentials_output,
-            product_input, send_email_button, send_email_output
-        ]
-    )
+    def show_login_dialog(self):
+        login_dialog = LoginDialog()
+        if login_dialog.exec_() == QDialog.Accepted:  # 接受输入后
+            self.username = login_dialog.input_username.text()
+            self.account = login_dialog.input_account.text()
+            self.password = login_dialog.input_password.text()
+            self.apikey = login_dialog.input_apikey.text()
+            
+            sender_show = f'<{self.username}>' + self.account
+            self.ui.sender_lineEdit.setText(sender_show)
 
-    # 使用 JavaScript 实现平滑滚动
-    demo.load(None, [], None, js="""
-    function() {
-        const scrollToElement = (elementId) => {
-            const element = document.querySelector(`[data-testid="${elementId}"]`);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-            }
-        };
+            icon = QIcon()
+            icon.addFile(u":/left/img/logo.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+            self.ui.loginButton.setIcon(icon)
+            self.ui.loginButton.setIconSize(QSize(64, 64))
 
-        setTimeout(() => {
-            if (!document.querySelector('[data-testid="block-0"]').style.display) {
-                scrollToElement('block-4');
-            }
-        }, 500);
+            if self.ui.body_textEdit.toHtml().strip() and self.file_ok and self.customer_ok:
+                self.ui.sendButton.setEnabled(True)
 
-        return [];
-    }
-    """)
+            if self.file_ok and self.customer_ok:
+                self.ui.generateButton.setEnabled(True)
+            self.login_ok = True
 
-    send_email_button.click(
-        fn=send_email_interface,
-        inputs=[product_input],
-        outputs=send_email_output
-    )
-#test
-# 启动 Gradio 应用
+    def load_customer_file(self):
+        """加载客户 CSV 文件"""
+        try:
+            with open(self.default_csv_path, newline='', encoding='gbk') as csvfile:
+                reader = csv.DictReader(csvfile)
+                self.customers = list(reader)
+
+            if not self.customers:
+                QMessageBox.warning(self, "警告", "文件为空或无有效数据！")
+                return
+
+            # 显示客户姓名到侧边栏
+            self.customer_list.clear()
+            for customer in self.customers:
+                self.customer_list.addItem(customer.get("姓名", "未知"))
+
+        except FileNotFoundError:
+            QMessageBox.critical(self, "错误", f"未找到文件：{self.default_csv_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"加载文件时出错：{str(e)}")
+
+    def select_customer(self, item):
+        """选择客户并自动填充发件人字段"""
+        customer_name = item.text()
+        self.selected_customer = next(
+            (customer for customer in self.customers if customer.get("姓名") == customer_name), None
+        )
+
+        if self.selected_customer:
+            rec_show = f'<{self.selected_customer.get("姓名", "")}>' + f'{self.selected_customer.get("邮箱", "")}'
+            self.ui.rec_lineEdit.setText(rec_show)
+            self.customer_account = self.selected_customer.get("邮箱", "")
+            self.details_button.setEnabled(True)
+            self.customer_ok = True
+
+    def show_details_dialog(self):
+        """展示客户详细信息弹窗"""
+        if self.selected_customer:
+            # 客户详细信息
+            dialog = CustomerDetailsDialog(self.selected_customer)
+            dialog.exec()
+    
+    def read_file_dialog(self):
+        # 打开文件对话框
+        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "所有文件 (*)")
+        if file_path:
+            self.file_ok = True
+            if self.ui.body_textEdit.toHtml().strip() and self.login_ok and self.customer_ok:
+                self.ui.sendButton.setEnabled(True)
+            if self.customer_ok:
+                self.ui.generateButton.setEnabled(True)
+            # 如果需要读取文件内容，可以在这里处理
+            with open(file_path, "r", encoding="utf-8") as file:
+                self.file_content = file.read()
+
+    def show_large_text_dialog(self):
+        global global_addInfo
+        dialog = LargeTextDialog()
+        dialog.textEdit.setPlainText(global_addInfo)
+        dialog.exec()
+
+
+    def generate_email(self):
+        if self.email_thread and self.email_thread.isRunning():
+            QMessageBox.warning(self, "警告", "上一个任务尚未完成！")
+            return
+        # 在点击生成时，先显示“处理中”提示
+        self.ui.body_textEdit.setPlainText("正在处理中，请稍等...")
+        self.ui.subject_lineEdit.clear()
+        
+        self.sender_info = {
+            "name": self.username,
+            # "phone": self.phone,
+            # "company": self.company,
+        }
+
+        row = self.selected_customer
+        # 在这里对每一行进行处理
+        # 创建一个字符串，包含所有列的信息
+        customer_data_str = (
+            f"姓名: {row['姓名']}, "
+            f"性别: {row['性别']}, "
+            f"年龄: {row['年龄']}, "
+            f"职业: {row['职业']}, "
+            f"婚姻状况: {row['婚姻状况']}, "
+            f"子女情况: {row['子女情况']}, "
+            f"保险需求: {row['保险需求']}, "
+            f"经济状况: {row['经济状况']}, "
+            f"兴趣爱好: {row['兴趣爱好']}, "
+            f"其他备注: {row['其他备注']}")
+
+        # 显示处理中的状态
+        self.ui.body_textEdit.setHtml("处理中，请稍候...")
+        self.ui.subject_lineEdit.setText("处理中...")
+
+        global global_addInfo
+        # 创建并启动线程
+        self.email_thread = EmailThread(self.apikey, self.sender_info, customer_data_str, global_addInfo)
+        self.email_thread.email_generated.connect(self.on_email_generated)
+        self.email_thread.finished.connect(self.clean_up_thread)
+        self.email_thread.start()
+
+    def on_email_generated(self, body, subject):
+        # 任务完成时，更新 UI
+        self.body = body
+        self.subject = subject
+        self.ui.body_textEdit.setHtml(body)
+        self.ui.subject_lineEdit.setText(subject)
+    
+    def send_email(self):
+        # 创建消息对象
+        msg = MIMEMultipart()
+        msg['From'] = self.account
+        msg['To'] = self.customer_account
+        msg['Subject'] = self.subject
+
+        # 添加邮件正文
+        msg.attach(MIMEText(self.body, 'html'))
+
+        try:
+            # 连接到 SMTP 服务器
+            server = smtplib.SMTP('smtp.qq.com', 587)
+            server.starttls()
+
+            # 登录到你的邮箱
+            server.login(self.account, self.password)
+
+            # 发送邮件
+            server.send_message(msg)
+            server.quit()
+
+            QMessageBox.information(self, "成功", "发送成功！")
+        except Exception as e:
+            QMessageBox.critical(self, "发送失败",f"Error: {str(e)}")
+        
+    def clean_up_thread(self):
+        self.email_thread = None
+
+    def closeEvent(self, event):
+        if self.email_thread and self.email_thread.isRunning():
+            self.email_thread.quit()
+            self.email_thread.wait()
+        super().closeEvent(event)
+        
+# 程序入口
 if __name__ == "__main__":
-    demo.launch()
+    # 初始化QApplication，界面展示要包含在QApplication初始化之后，结束之前
+    app = QApplication(sys.argv)
+ 
+    # 初始化并展示我们的界面组件
+    window = MyWidget()
+    window.show()
+    
+    # 结束QApplication
+    sys.exit(app.exec())
