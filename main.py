@@ -281,6 +281,8 @@ class MyWidget(QMainWindow):
             self.ui.rec_lineEdit.setText(rec_show)
             self.customer_account = self.selected_customer.get("邮箱", "")
             self.details_button.setEnabled(True)
+            if self.login_ok:
+                self.ui.generateButton.setEnabled(True)
             self.customer_ok = True
 
     def show_details_dialog(self):
