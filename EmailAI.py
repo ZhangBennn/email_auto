@@ -1,5 +1,5 @@
-import gradio as gr
-import requests
+# import gradio as gr
+# import requests
 from zhipuai import ZhipuAI
 
 # 假设这是你的GLM API的URL

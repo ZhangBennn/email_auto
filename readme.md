@@ -3,6 +3,10 @@
 
 ![alt text](./img/Snipast_main.png)
 
+# 安装
+1. python==3.9
+2. pip instal -r requirements.txt
+
 # 账号准备
 1. QQ邮箱账号
 2. 获取qq邮箱授权码（非密码）,方式如下：
