@@ -15,7 +15,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFormLayout, QHBoxLayout, QLabel,
+from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QListWidgetItem, QMainWindow,
     QPushButton, QSizePolicy, QStatusBar, QTextEdit,
     QVBoxLayout, QWidget)
@@ -25,18 +25,19 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1006, 768)
+        MainWindow.resize(996, 768)
         MainWindow.setStyleSheet(u"background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(166, 174, 228, 255), stop:1 rgba(255, 255, 255, 255));\n"
 "font: 9pt \"Microsoft YaHei UI\";")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.mainLayout = QHBoxLayout(self.centralwidget)
-        self.mainLayout.setObjectName(u"mainLayout")
-        self.leftButtonLayout = QVBoxLayout()
-        self.leftButtonLayout.setObjectName(u"leftButtonLayout")
+        self.centralwidget.setMaximumSize(QSize(65536, 65536))
+        self.gridLayout_2 = QGridLayout(self.centralwidget)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.loginButton = QPushButton(self.centralwidget)
         self.loginButton.setObjectName(u"loginButton")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.loginButton.sizePolicy().hasHeightForWidth())
@@ -49,81 +50,121 @@ class Ui_MainWindow(object):
         self.loginButton.setIcon(icon)
         self.loginButton.setIconSize(QSize(64, 64))
 
-        self.leftButtonLayout.addWidget(self.loginButton)
+        self.verticalLayout.addWidget(self.loginButton)
 
         self.fileButton = QPushButton(self.centralwidget)
         self.fileButton.setObjectName(u"fileButton")
+        sizePolicy.setHeightForWidth(self.fileButton.sizePolicy().hasHeightForWidth())
+        self.fileButton.setSizePolicy(sizePolicy)
 
-        self.leftButtonLayout.addWidget(self.fileButton)
+        self.verticalLayout.addWidget(self.fileButton)
 
         self.sideButton = QPushButton(self.centralwidget)
         self.sideButton.setObjectName(u"sideButton")
+        sizePolicy.setHeightForWidth(self.sideButton.sizePolicy().hasHeightForWidth())
+        self.sideButton.setSizePolicy(sizePolicy)
 
-        self.leftButtonLayout.addWidget(self.sideButton)
+        self.verticalLayout.addWidget(self.sideButton)
+
+        self.pushButton_recommend = QPushButton(self.centralwidget)
+        self.pushButton_recommend.setObjectName(u"pushButton_recommend")
+        sizePolicy.setHeightForWidth(self.pushButton_recommend.sizePolicy().hasHeightForWidth())
+        self.pushButton_recommend.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.pushButton_recommend)
 
         self.costumerButton = QPushButton(self.centralwidget)
         self.costumerButton.setObjectName(u"costumerButton")
+        sizePolicy.setHeightForWidth(self.costumerButton.sizePolicy().hasHeightForWidth())
+        self.costumerButton.setSizePolicy(sizePolicy)
 
-        self.leftButtonLayout.addWidget(self.costumerButton)
+        self.verticalLayout.addWidget(self.costumerButton)
 
-        self.listWidget = QListWidget(self.centralwidget)
-        self.listWidget.setObjectName(u"listWidget")
-        self.listWidget.setEnabled(True)
+        self.listWidget_customer = QListWidget(self.centralwidget)
+        self.listWidget_customer.setObjectName(u"listWidget_customer")
+        self.listWidget_customer.setEnabled(True)
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.listWidget.sizePolicy().hasHeightForWidth())
-        self.listWidget.setSizePolicy(sizePolicy1)
-        self.listWidget.setMinimumSize(QSize(80, 0))
-        self.listWidget.setMaximumSize(QSize(80, 584))
+        sizePolicy1.setHeightForWidth(self.listWidget_customer.sizePolicy().hasHeightForWidth())
+        self.listWidget_customer.setSizePolicy(sizePolicy1)
+        self.listWidget_customer.setMinimumSize(QSize(80, 0))
+        self.listWidget_customer.setMaximumSize(QSize(80, 584))
 
-        self.leftButtonLayout.addWidget(self.listWidget)
+        self.verticalLayout.addWidget(self.listWidget_customer)
+
+        self.productButton = QPushButton(self.centralwidget)
+        self.productButton.setObjectName(u"productButton")
+        sizePolicy.setHeightForWidth(self.productButton.sizePolicy().hasHeightForWidth())
+        self.productButton.setSizePolicy(sizePolicy)
+
+        self.verticalLayout.addWidget(self.productButton)
+
+        self.label_parsestate = QLabel(self.centralwidget)
+        self.label_parsestate.setObjectName(u"label_parsestate")
+
+        self.verticalLayout.addWidget(self.label_parsestate)
+
+        self.listWidget_product = QListWidget(self.centralwidget)
+        self.listWidget_product.setObjectName(u"listWidget_product")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        sizePolicy2.setHorizontalStretch(1)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.listWidget_product.sizePolicy().hasHeightForWidth())
+        self.listWidget_product.setSizePolicy(sizePolicy2)
+        self.listWidget_product.setMinimumSize(QSize(80, 0))
+        self.listWidget_product.setMaximumSize(QSize(80, 16777215))
+
+        self.verticalLayout.addWidget(self.listWidget_product)
 
 
-        self.mainLayout.addLayout(self.leftButtonLayout)
+        self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
 
-        self.contentLayout = QVBoxLayout()
-        self.contentLayout.setObjectName(u"contentLayout")
-        self.formLayout = QFormLayout()
-        self.formLayout.setObjectName(u"formLayout")
+        self.gridLayout = QGridLayout()
+        self.gridLayout.setObjectName(u"gridLayout")
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.label)
-
-        self.label_2 = QLabel(self.centralwidget)
-        self.label_2.setObjectName(u"label_2")
-
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.label_2)
-
-        self.sender_lineEdit = QLineEdit(self.centralwidget)
-        self.sender_lineEdit.setObjectName(u"sender_lineEdit")
-
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.sender_lineEdit)
-
-        self.label_3 = QLabel(self.centralwidget)
-        self.label_3.setObjectName(u"label_3")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.label_3)
-
-        self.subject_lineEdit = QLineEdit(self.centralwidget)
-        self.subject_lineEdit.setObjectName(u"subject_lineEdit")
-
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.subject_lineEdit)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
         self.rec_lineEdit = QLineEdit(self.centralwidget)
         self.rec_lineEdit.setObjectName(u"rec_lineEdit")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.rec_lineEdit)
+        self.gridLayout.addWidget(self.rec_lineEdit, 0, 1, 1, 1)
+
+        self.label_2 = QLabel(self.centralwidget)
+        self.label_2.setObjectName(u"label_2")
+
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+
+        self.sender_lineEdit = QLineEdit(self.centralwidget)
+        self.sender_lineEdit.setObjectName(u"sender_lineEdit")
+
+        self.gridLayout.addWidget(self.sender_lineEdit, 1, 1, 1, 1)
+
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
+
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+
+        self.subject_lineEdit = QLineEdit(self.centralwidget)
+        self.subject_lineEdit.setObjectName(u"subject_lineEdit")
+
+        self.gridLayout.addWidget(self.subject_lineEdit, 2, 1, 1, 1)
+
+        self.horizontalLayout_attachment = QHBoxLayout()
+        self.horizontalLayout_attachment.setObjectName(u"horizontalLayout_attachment")
+
+        self.gridLayout.addLayout(self.horizontalLayout_attachment, 3, 1, 1, 1)
 
         self.body_textEdit = QTextEdit(self.centralwidget)
         self.body_textEdit.setObjectName(u"body_textEdit")
         self.body_textEdit.setStyleSheet(u"")
 
-        self.formLayout.setWidget(3, QFormLayout.SpanningRole, self.body_textEdit)
+        self.gridLayout.addWidget(self.body_textEdit, 4, 0, 1, 2)
 
 
-        self.contentLayout.addLayout(self.formLayout)
+        self.gridLayout_2.addLayout(self.gridLayout, 0, 1, 1, 1)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -138,10 +179,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.sendButton)
 
 
-        self.contentLayout.addLayout(self.horizontalLayout)
-
-
-        self.mainLayout.addLayout(self.contentLayout)
+        self.gridLayout_2.addLayout(self.horizontalLayout, 1, 1, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QStatusBar(MainWindow)
@@ -158,7 +196,10 @@ class Ui_MainWindow(object):
         self.loginButton.setText("")
         self.fileButton.setText(QCoreApplication.translate("MainWindow", u"\u6d4f\u89c8\u6587\u4ef6", None))
         self.sideButton.setText(QCoreApplication.translate("MainWindow", u"\u989d\u5916\u4fe1\u606f", None))
+        self.pushButton_recommend.setText(QCoreApplication.translate("MainWindow", u"AI\u63a8\u8350", None))
         self.costumerButton.setText(QCoreApplication.translate("MainWindow", u"\u5ba2\u6237\u8be6\u60c5", None))
+        self.productButton.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u9669\u8be6\u60c5", None))
+        self.label_parsestate.setText("")
         self.label.setText(QCoreApplication.translate("MainWindow", u"\u6536\u4ef6\u4eba", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u53d1\u4ef6\u4eba", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u4e3b\u9898", None))
